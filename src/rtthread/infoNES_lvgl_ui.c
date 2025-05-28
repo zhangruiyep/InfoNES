@@ -11,6 +11,7 @@
 //extern WORD WorkFrame[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 unsigned short canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 extern void start_application( void );
+extern void close_application( void );
 
 typedef struct
 {
@@ -29,9 +30,6 @@ void nes_ui_obj_init(lv_obj_t *parent)
     p_nes->canvas = lv_canvas_create(parent, NULL);
     lv_canvas_set_buffer(p_nes->canvas, canvas_buffer, NES_DISP_WIDTH, NES_DISP_HEIGHT, LV_IMG_CF_RGB565);
     lv_obj_align(p_nes->canvas, parent, LV_ALIGN_IN_TOP_MID, 0, 0);
-
-    LOG_D("%s: start application", __func__);
-    start_application();
 }
 
 void nes_page_refresh(lv_task_t *task)
@@ -65,6 +63,8 @@ static void on_start(void)
     lvsf_page_set_defult_pos(p_nes->bg_page);
 
     //keypad_handler_register(nes_keypad_handler_cb);
+    LOG_D("%s: start application", __func__);
+    start_application();
 }
 
 static void on_resume(void)
@@ -106,6 +106,8 @@ static void on_pause(void)
 
 static void on_stop(void)
 {
+    LOG_D("%s: stop application", __func__);
+    close_application();
     //keypad_handler_register(NULL);
     RT_ASSERT(p_nes);
     p_nes = NULL;

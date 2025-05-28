@@ -70,6 +70,7 @@ extern "C" {
 extern WORD canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 extern void nes_canvas_refresh(void);
 void start_application( void );
+void close_application( void );
 #ifdef __cplusplus
 }
 #endif
@@ -421,6 +422,22 @@ void start_application( void )
 
     if (tid != RT_NULL)
         rt_thread_startup(tid);
+  }
+}
+
+/*===================================================================*/
+/*                                                                   */
+/*     close_application() : When invoked via signal delete_event    */
+/*                                                                   */
+/*===================================================================*/
+void close_application( void )
+{
+  /* Save SRAM*/
+  SaveSRAM();
+
+  if ( tid != RT_NULL )
+  {
+    rt_thread_delete( tid );
   }
 }
 
