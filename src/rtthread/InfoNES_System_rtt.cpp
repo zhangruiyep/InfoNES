@@ -54,7 +54,7 @@ int nSRAM_SaveFlag;
 rt_thread_t g_nes_tid;
 
 /* Pad state */
-DWORD dwKeyPad1;
+//DWORD dwKeyPad1;
 DWORD dwKeyPad2;
 DWORD dwKeySystem;
 
@@ -67,8 +67,12 @@ int sound_fd;
 #ifdef __cplusplus
 extern "C" {
 #endif
+/* Pad state */
+extern DWORD dwKeyPad1;
+/* lv canvas for display */
 extern WORD canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 extern void nes_canvas_refresh(void);
+/* for c api */
 void start_application( void );
 void close_application( void );
 #ifdef __cplusplus
@@ -198,204 +202,6 @@ void emulation_thread(void *args)
   InfoNES_Main();
   return;
 }
-
-/*===================================================================*/
-/*                                                                   */
-/*          add_key() : Connecting to the key_press_event event      */
-/*                                                                   */
-/*===================================================================*/
-#if 0
-void add_key( GtkWidget *widget, GdkEventKey *event, gpointer callback_data )
-{
-  switch ( event->keyval )
-  {
-    case GDK_Right:
-      dwKeyPad1 |= ( 1 << 7 );
-      break;
-
-    case GDK_Left:
-      dwKeyPad1 |= ( 1 << 6 );
-      break;
-
-    case GDK_Down:
-      dwKeyPad1 |= ( 1 << 5 );
-      break;
-
-    case GDK_Up:
-      dwKeyPad1 |= ( 1 << 4 );
-      break;
-
-    case 's':
-    case 'S':
-      /* Start */
-      dwKeyPad1 |= ( 1 << 3 );
-      break;
-
-    case 'a':
-    case 'A':
-      /* Select */
-      dwKeyPad1 |= ( 1 << 2 );
-      break;
-
-    case 'z':
-    case 'Z':
-      /* 'A' */
-      dwKeyPad1 |= ( 1 << 1 );
-      break;
-
-    case 'x':
-    case 'X':
-      /* 'B' */
-      dwKeyPad1 |= ( 1 << 0 );
-      break;
-
-    case 'c':
-    case 'C':
-      /* Toggle up and down clipping */
-      PPU_UpDown_Clip = ( PPU_UpDown_Clip ? 0 : 1 );
-      break;
-
-    case 'q':
-    case 'Q':
-      close_application( widget, NULL, NULL );
-      break;
-
-    case 'r':
-    case 'R':
-      /* Reset the application */
-      reset_application();
-      break;
-
-    case 'l':
-    case 'L':
-      /* If emulation thread runs, nothing here */
-      if ( bThread != TRUE )
-      {
-	/* Create a file selection widget */
-	filew = gtk_file_selection_new( "Load" );
-	gtk_widget_show( filew );
-
-        /* Connecting to button event */
-	gtk_signal_connect_object( GTK_OBJECT( GTK_FILE_SELECTION( filew )->ok_button ),
-				   "clicked",
-				   ( GtkSignalFunc ) start_application_aux,
-				   GTK_OBJECT( filew ) );
-
-	gtk_signal_connect_object( GTK_OBJECT( GTK_FILE_SELECTION( filew )->cancel_button ),
-				   "clicked",
-				   ( GtkSignalFunc ) gtk_widget_destroy,
-				   GTK_OBJECT( filew ) );
-      }
-      break;
-
-    case GDK_Page_Up:
-      /* Increase Frame Skip */
-      FrameSkip++;
-      break;
-
-    case GDK_Page_Down:
-      /* Decrease Frame Skip */
-      if ( FrameSkip > 0 )
-      {
-	FrameSkip--;
-      }
-      break;
-
-    case 'm':
-    case 'M':
-      /* Toggle of sound mute */
-      APU_Mute = ( APU_Mute ? 0 : 1 );
-      break;
-
-    case 'i':
-    case 'I':
-      /* If emulation thread doesn't run, nothing here */
-      if ( bThread )
-      {
-	InfoNES_MessageBox( "Mapper : %d\nPRG ROM : %dKB\nCHR ROM : %dKB\n" \
-			    "Mirroring : %s\nSRAM : %s\n4 Screen : %s\nTrainer : %s\n",
-			    MapperNo, NesHeader.byRomSize * 16, NesHeader.byVRomSize * 8,
-			    ( ROM_Mirroring ? "V" : "H" ), ( ROM_SRAM ? "Yes" : "No" ),
-			    ( ROM_FourScr ? "Yes" : "No" ), ( ROM_Trainer ? "Yes" : "No" ) );
-      }
-      break;
-
-    case 'v':
-    case 'V':
-      /* Version Infomation */
-      InfoNES_MessageBox( "%s\nA fast and portable NES emulator\n"
-			  "Copyright (c) 1999-2005 Jay's Factory <jays_factory@excite.co.jp>",
-			  VERSION );
-      break;
-
-    defalut:
-      break;
-  }
-}
-
-/*===================================================================*/
-/*                                                                   */
-/*       remove_key() : Connecting to the key_release_event event    */
-/*                                                                   */
-/*===================================================================*/
-
-void remove_key( GtkWidget *widget, GdkEventKey *event, gpointer callback_data )
-{
-  switch ( event->keyval )
-  {
-    case GDK_Right:
-      dwKeyPad1 &= ~( 1 << 7 );
-      break;
-
-    case GDK_Left:
-      dwKeyPad1 &= ~( 1 << 6 );
-      break;
-
-    case GDK_Down:
-      dwKeyPad1 &= ~( 1 << 5 );
-      break;
-
-    case GDK_Up:
-      dwKeyPad1 &= ~( 1 << 4 );
-      break;
-
-    case 's':
-    case 'S':
-      /* Start */
-      dwKeyPad1 &= ~( 1 << 3 );
-      break;
-
-    case 'a':
-    case 'A':
-      /* Select */
-      dwKeyPad1 &= ~( 1 << 2 );
-      break;
-
-    case 'z':
-    case 'Z':
-      /* 'A' */
-      dwKeyPad1 &= ~( 1 << 1 );
-      break;
-
-    case 'x':
-    case 'X':
-      /* 'B' */
-      dwKeyPad1 &= ~( 1 << 0 );
-      break;
-
-#if 0
-    case 'q':
-    case 'Q':
-      /* Terminate emulation thread */
-      dwKeySystem &= ~( PAD_SYS_QUIT );
-      break;
-#endif
-
-    defalut:
-      break;
-  }
-}
-#endif
 
 /*===================================================================*/
 /*                                                                   */

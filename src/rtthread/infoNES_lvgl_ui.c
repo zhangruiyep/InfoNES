@@ -13,23 +13,95 @@ unsigned short canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 extern void start_application( void );
 extern void close_application( void );
 
+unsigned int dwKeyPad1;
+
 typedef struct
 {
     lv_obj_t              *bg_page;
     rt_list_t             *list;
     lv_task_t             *refresh_task;
     lv_obj_t              *canvas;
+    lv_obj_t              *pad;
 } app_nes_t;
 
+#define NES_PAD_WIDTH   360
+#define NES_PAD_HEIGHT  120
+#define NES_BTN_SIZE    (NES_PAD_HEIGHT / 3)
+
+typedef enum {
+    NES_BTN_B,
+    NES_BTN_A,
+    NES_BTN_SELECT,
+    NES_BTN_START,
+    NES_BTN_UP,
+    NES_BTN_DOWN,
+    NES_BTN_LEFT,
+    NES_BTN_RIGHT,
+    NES_BTN_MAX,
+} nes_btn_id_t;
 
 static app_nes_t *p_nes = NULL;
 
-void nes_ui_obj_init(lv_obj_t *parent)
+
+static void nes_btn_cb(lv_obj_t *obj, lv_event_t event)
+{
+    nes_btn_id_t btn_id = (nes_btn_id_t)lv_obj_get_user_data(obj);
+    if (event == LV_EVENT_PRESSED) {
+        LOG_D("%s: btn %d press", __func__, btn_id);
+        dwKeyPad1 |= (1 << btn_id);
+    } else if (event == LV_EVENT_RELEASED) {
+        LOG_D("%s: btn %d release", __func__, btn_id);
+        dwKeyPad1 &= ~(1 << btn_id);
+    }
+}
+static lv_obj_t* nes_ui_btn_create(lv_obj_t *parent, nes_btn_id_t btn_id)
+{
+    lv_obj_t *btn = lv_btn_create(parent, NULL);
+    lv_obj_set_size(btn, NES_BTN_SIZE, NES_BTN_SIZE);
+    lv_ext_set_local_bg(btn, LV_COLOR_GRAY, LV_OPA_COVER);
+    lv_obj_set_click(btn, true);
+    lv_obj_set_user_data(btn, (void *)btn_id);
+    lv_obj_set_event_cb(btn, nes_btn_cb);
+    return btn;
+}
+
+static void nes_ui_pad_init(lv_obj_t *parent)
+{
+    // + buttons
+    lv_obj_t *btn_up = nes_ui_btn_create(parent, NES_BTN_UP);
+    lv_obj_align(btn_up, parent, LV_ALIGN_IN_LEFT_MID, NES_BTN_SIZE, -NES_BTN_SIZE);
+    lv_obj_t *btn_down = nes_ui_btn_create(parent, NES_BTN_DOWN);
+    lv_obj_align(btn_down, parent, LV_ALIGN_IN_LEFT_MID, NES_BTN_SIZE, NES_BTN_SIZE);
+    lv_obj_t *btn_left = nes_ui_btn_create(parent, NES_BTN_LEFT);
+    lv_obj_align(btn_left, parent, LV_ALIGN_IN_LEFT_MID, 0, 0);
+    lv_obj_t *btn_right = nes_ui_btn_create(parent, NES_BTN_RIGHT);
+    lv_obj_align(btn_right, parent, LV_ALIGN_IN_LEFT_MID, NES_BTN_SIZE * 2, 0);
+    // ab buttons
+    lv_obj_t *btn_a = nes_ui_btn_create(parent, NES_BTN_A);
+    lv_obj_align(btn_a, parent, LV_ALIGN_IN_RIGHT_MID, - NES_BTN_SIZE * 2, 0);
+    lv_obj_t *btn_b = nes_ui_btn_create(parent, NES_BTN_B);
+    lv_obj_align(btn_b, parent, LV_ALIGN_IN_RIGHT_MID, 0, 0);
+    // select/start buttons
+    lv_obj_t *btn_select = nes_ui_btn_create(parent, NES_BTN_SELECT);
+    lv_obj_set_size(btn_select, NES_BTN_SIZE, NES_BTN_SIZE*2/3);
+    lv_obj_align(btn_select, parent, LV_ALIGN_IN_BOTTOM_MID, -NES_BTN_SIZE/2, 0);
+    lv_obj_t *btn_start = nes_ui_btn_create(parent, NES_BTN_START);
+    lv_obj_set_size(btn_start, NES_BTN_SIZE, NES_BTN_SIZE*2/3);
+    lv_obj_align(btn_start, parent, LV_ALIGN_IN_BOTTOM_MID, NES_BTN_SIZE/2, 0);
+}
+
+static void nes_ui_obj_init(lv_obj_t *parent)
 {
     // 创建画布
     p_nes->canvas = lv_canvas_create(parent, NULL);
     lv_canvas_set_buffer(p_nes->canvas, canvas_buffer, NES_DISP_WIDTH, NES_DISP_HEIGHT, LV_IMG_CF_RGB565);
     lv_obj_align(p_nes->canvas, parent, LV_ALIGN_IN_TOP_MID, 0, 0);
+
+    lv_obj_t *pad = lv_cont_create(parent, NULL);
+    lv_obj_set_size(pad, NES_PAD_WIDTH, NES_PAD_HEIGHT);
+    lv_obj_align(pad, parent, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+
+    nes_ui_pad_init(pad);
 }
 
 void nes_page_refresh(lv_task_t *task)
