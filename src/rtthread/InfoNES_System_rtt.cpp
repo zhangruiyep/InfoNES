@@ -51,7 +51,7 @@ int nSRAM_SaveFlag;
 /*-------------------------------------------------------------------*/
 /*  Global Variables ( rt-thread specific )                              */
 /*-------------------------------------------------------------------*/
-rt_thread_t tid;
+rt_thread_t g_nes_tid;
 
 /* Pad state */
 DWORD dwKeyPad1;
@@ -416,12 +416,12 @@ void start_application( void )
     rt_kprintf( "Load SRAM done\n" );
 
     /* Create Emulation Thread */
-    tid = rt_thread_create("nes_emu",
+    g_nes_tid = rt_thread_create("nes_emu",
                            emulation_thread, RT_NULL,
                            4096, RT_THREAD_PRIORITY_LOW, RT_THREAD_TICK_DEFAULT);
 
-    if (tid != RT_NULL)
-        rt_thread_startup(tid);
+    if (g_nes_tid != RT_NULL)
+        rt_thread_startup(g_nes_tid);
   }
 }
 
@@ -435,60 +435,12 @@ void close_application( void )
   /* Save SRAM*/
   SaveSRAM();
 
-  if ( tid != RT_NULL )
+  if ( g_nes_tid != RT_NULL )
   {
-    rt_thread_delete( tid );
+    rt_thread_delete( g_nes_tid );
+    g_nes_tid = RT_NULL;
   }
 }
-
-#if 0
-/* Wrapper function for GTK file selection */
-gint start_application_aux( GtkObject *gfs )
-{
-  /* Call actual function */
-  start_application( gtk_file_selection_get_filename( GTK_FILE_SELECTION( gfs ) ) );
-
-  /* Destroy a file selection widget */
-  gtk_widget_destroy( GTK_WIDGET( gfs ) );
-}
-#endif
-
-#if 0
-/*===================================================================*/
-/*                                                                   */
-/*     close_application() : When invoked via signal delete_event    */
-/*                                                                   */
-/*===================================================================*/
-gint close_application( GtkWidget *widget, GdkEvent *event, gpointer data )
-{
-  if ( bThread == TRUE )
-  {
-    /* Terminate emulation thread */
-    bThread = FALSE;
-    dwKeySystem |= PAD_SYS_QUIT;
-
-    /* Leave Critical Section */
-    gdk_threads_leave();
-
-    /* Waiting for Termination */
-    pthread_join( emulation_tid, NULL );
-
-    /* Enter Critical Section */
-    gdk_threads_enter();
-
-    /* Save SRAM*/
-    SaveSRAM();
-
-    /* Release GC*/
-    gdk_gc_destroy(gc);
-  }
-
-  /* Terminates the application */
-  gtk_main_quit();
-
-  return( FALSE );
-}
-#endif
 
 /*===================================================================*/
 /*                                                                   */
@@ -497,38 +449,15 @@ gint close_application( GtkWidget *widget, GdkEvent *event, gpointer data )
 /*===================================================================*/
 void reset_application( void )
 {
-#if 0
   /* Do nothing if emulation thread does not exists */
-  if ( bThread == TRUE )
+  if ( g_nes_tid != RT_NULL )
   {
     /* Terminate emulation thread */
-    bThread = FALSE;
     dwKeySystem |= PAD_SYS_QUIT;
 
-    /* Leave Critical Section */
-    gdk_threads_leave();
-
-    /* Waiting for Termination */
-    pthread_join( emulation_tid, NULL );
-
-    /* Enter Critical Section */
-    gdk_threads_enter();
-
-    /* Save SRAM File */
-    SaveSRAM();
-
-    /* Load cassette */
-    if ( InfoNES_Load ( szRomName ) == 0 )
-    {
-      /* Load SRAM */
-      LoadSRAM();
-
-      /* Create Emulation Thread */
-      bThread = TRUE;
-      pthread_create( &emulation_tid, NULL, emulation_thread, NULL );
-    }
+    close_application();
+    start_application();
   }
-#endif
 }
 
 /*===================================================================*/
@@ -739,13 +668,12 @@ int InfoNES_Menu()
  *     0 : Normally
  *    -1 : Exit InfoNES
  */
-#if 0
+
   /* If terminated */
-  if ( bThread == FALSE )
+  if ( g_nes_tid == NULL )
   {
     return -1;
   }
-#endif
 
   /* Nothing to do here */
   return 0;
@@ -915,10 +843,10 @@ void InfoNES_LoadFrame()
     for ( int x = 0; x < NES_DISP_WIDTH; x++ )
     {
       WORD wColor = WorkFrame[ ( y << 8 ) + x ];
-      /* 555 to RGB565 */
-      canvas_buffer[ ( y << 8 ) + x ] = (wColor & 0x7c00) << 1
-      | (wColor & 0x03e0) << 1 | (wColor & 0x0200) >> 4
-      | (wColor & 0x001f) ;
+      /* RGB555 to RGB565 */
+      canvas_buffer[ ( y << 8 ) + x ] = (wColor & 0x7c00) << 1  //R: keep format, move position
+      | (wColor & 0x03e0) << 1 | (wColor & 0x0200) >> 4 //G: 5 bits expend to 6 bits, fill bit0 with bit4
+      | (wColor & 0x001f) ; //B: keep format
     }
   }
   nes_canvas_refresh();
