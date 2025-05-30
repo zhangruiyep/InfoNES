@@ -72,6 +72,11 @@ extern DWORD dwKeyPad1;
 /* lv canvas for display */
 extern WORD canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 extern void nes_canvas_refresh(void);
+/* audio */
+extern void infoNES_audio_init(void);
+extern int infoNES_audio_open(int samples_per_sync, int sample_rate);
+extern void InfoNES_audio_close( void );
+extern int InfoNES_audio_write(uint8_t *data, uint32_t data_len);
 /* for c api */
 void start_application( void );
 void close_application( void );
@@ -229,6 +234,8 @@ void start_application( void )
     if (g_nes_tid != RT_NULL)
         rt_thread_startup(g_nes_tid);
   }
+
+  FrameSkip = 2;
 }
 
 /*===================================================================*/
@@ -693,7 +700,7 @@ void InfoNES_PadState( DWORD *pdwPad1, DWORD *pdwPad2, DWORD *pdwSystem )
 /*===================================================================*/
 void InfoNES_SoundInit( void )
 {
-  sound_fd = 0;
+  infoNES_audio_init();
 }
 
 /*===================================================================*/
@@ -703,76 +710,11 @@ void InfoNES_SoundInit( void )
 /*===================================================================*/
 int InfoNES_SoundOpen( int samples_per_sync, int sample_rate )
 {
-  int tmp;
-  int result;
-  int sound_rate;
-  int sound_frag;
-
-  waveptr = 0;
-  wavflag = 0;
-#if 0
-  /* Open sound device */
-  sound_fd = open( SOUND_DEVICE, O_WRONLY );
-  if ( sound_fd < 0 )
+  if (infoNES_audio_open (samples_per_sync, sample_rate) < 0)
   {
-    InfoNES_MessageBox("opening "SOUND_DEVICE"...failed");
-    sound_fd = 0;
     return 0;
-  } else {
-
   }
 
-  /* Setting unsigned 8-bit format */
-  tmp = AFMT_U8;
-  result = ioctl(sound_fd, SNDCTL_DSP_SETFMT, &tmp);
-  if ( result < 0 )
-  {
-    InfoNES_MessageBox("setting unsigned 8-bit format...failed");
-    close(sound_fd);
-    sound_fd = 0;
-    return 0;
-  } else {
-
-  }
-
-  /* Setting mono mode */
-  tmp = 0;
-  result = ioctl(sound_fd, SNDCTL_DSP_STEREO, &tmp);
-  if (result < 0)
-  {
-    InfoNES_MessageBox("setting mono mode...failed");
-    close(sound_fd);
-    sound_fd = 0;
-    return 0;
-  } else {
-
-  }
-
-  sound_rate = sample_rate;
-  result = ioctl(sound_fd, SNDCTL_DSP_SPEED, &sound_rate);
-  if ( result < 0 )
-  {
-    InfoNES_MessageBox("setting sound rate...failed");
-    close(sound_fd);
-    sound_fd = 0;
-    return 0;
-  } else {
-
-  }
-
-  /* high word of sound_frag is number of frags, low word is frag size */
-  sound_frag = 0x00080008;
-  result = ioctl(sound_fd, SNDCTL_DSP_SETFRAGMENT, &sound_frag);
-  if (result < 0)
-  {
-    InfoNES_MessageBox("setting soundfrags...failed");
-    close(sound_fd);
-    sound_fd = 0;
-    return 0;
-  } else {
-
-  }
-#endif
   /* Successful */
   return 1;
 }
@@ -784,12 +726,7 @@ int InfoNES_SoundOpen( int samples_per_sync, int sample_rate )
 /*===================================================================*/
 void InfoNES_SoundClose( void )
 {
-#if 0
-  if ( sound_fd )
-  {
-    close(sound_fd);
-  }
-#endif
+  InfoNES_audio_close();
 }
 
 /*===================================================================*/
@@ -801,7 +738,7 @@ void InfoNES_SoundOutput( int samples, BYTE *wave1, BYTE *wave2, BYTE *wave3, BY
 {
   int i;
 
-  if ( sound_fd )
+  //if ( sound_fd )
   {
     for (i = 0; i < samples; i++)
     {
@@ -824,16 +761,15 @@ void InfoNES_SoundOutput( int samples, BYTE *wave1, BYTE *wave2, BYTE *wave3, BY
 	wavflag = 1;
       }
     }
-#if 0
+
     if ( wavflag )
     {
-      if ( write( sound_fd, &final_wave[(wavflag - 1) << 10], 1024) < 1024 )
+      if ( InfoNES_audio_write( &final_wave[(wavflag - 1) << 10], 1024) < 1024 )
       {
 	InfoNES_MessageBox( "wrote less than 1024 bytes\n" );
       }
       wavflag = 0;
     }
-#endif
   }
 }
 
@@ -851,7 +787,7 @@ void InfoNES_Wait() {
 /*            InfoNES_MessageBox() : Print System Message            */
 /*                                                                   */
 /*===================================================================*/
-void InfoNES_MessageBox( char *pszMsg, ... )
+void InfoNES_MessageBox( const char *pszMsg, ... )
 {
   char pszErr[ 1024 ];
   va_list args;
