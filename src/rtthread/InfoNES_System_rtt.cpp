@@ -104,98 +104,6 @@ WORD NesPalette[ 64 ] =
   0x7f94, 0x73f4, 0x57d7, 0x5bf9, 0x4ffe, 0x0000, 0x0000, 0x0000
 };
 
-#if 0
-/*===================================================================*/
-/*                                                                   */
-/*                main() : Application main                          */
-/*                                                                   */
-/*===================================================================*/
-
-/* Application main */
-int main(int argc, char **argv)
-{
-  int       i;
-#if 0
-  /*-------------------------------------------------------------------*/
-  /*  Initialize GTK+/GDK                                              */
-  /*-------------------------------------------------------------------*/
-
-  g_thread_init( NULL );
-  gtk_set_locale();
-  gtk_init(&argc, &argv);
-  gdk_rgb_init();
-
-  /*-------------------------------------------------------------------*/
-  /*  Create a top window                                              */
-  /*-------------------------------------------------------------------*/
-
-  /* Create a window */
-  top=gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_widget_set_usize( GTK_WIDGET(top), NES_DISP_WIDTH + VBOX_SIZE, NES_DISP_HEIGHT + VBOX_SIZE );
-  gtk_window_set_title( GTK_WINDOW(top), VERSION );
-  gtk_widget_set_events( GTK_WIDGET(top), GDK_KEY_RELEASE_MASK );
-
-  /* Destroy a window */
-  gtk_signal_connect( GTK_OBJECT(top), "destroy",
-		      GTK_SIGNAL_FUNC( close_application ),
-		      NULL );
-
-  /* Create a vbox */
-  vbox=gtk_vbox_new(FALSE, 5);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox), 3);
-  gtk_container_add(GTK_CONTAINER(top), vbox);
-
-  /* Create a drawing area */
-  draw_area = gtk_drawing_area_new();
-  gtk_box_pack_start(GTK_BOX (vbox), draw_area, TRUE, TRUE, 0);
-
-  gtk_widget_show_all(top);
-#endif
-
-  /*-------------------------------------------------------------------*/
-  /*  Pad Control                                                      */
-  /*-------------------------------------------------------------------*/
-
-  /* Initialize a pad state */
-  dwKeyPad1   = 0;
-  dwKeyPad2   = 0;
-  dwKeySystem = 0;
-
-#if 0
-  /* Connecting to key event */
-  gtk_signal_connect( GTK_OBJECT(top), "key_press_event",
-		      GTK_SIGNAL_FUNC( add_key ),
-		      NULL );
-
-  gtk_signal_connect( GTK_OBJECT(top), "key_release_event",
-		      GTK_SIGNAL_FUNC( remove_key ),
-		      NULL );
-#endif
-
-  /*-------------------------------------------------------------------*/
-  /*  Load Cassette & Create Thread                                    */
-  /*-------------------------------------------------------------------*/
-
-#if 0
-  /* Initialize thread state */
-  bThread = FALSE;
-
-  /* If a rom name specified, start it */
-  if ( argc == 2 )
-  {
-    start_application( argv[ 1 ] );
-  }
-
-  /* show the window */
-  gdk_threads_enter();
-  gtk_main ();
-  gdk_threads_leave();
-#endif
-
-  return(0);
-}
-#endif
-
 /*===================================================================*/
 /*                                                                   */
 /*           emulation_thread() : Thread Hooking Routine             */
@@ -235,7 +143,7 @@ void start_application( void )
         rt_thread_startup(g_nes_tid);
   }
 
-  FrameSkip = 2;
+  //FrameSkip = 2;
 }
 
 /*===================================================================*/
@@ -799,18 +707,6 @@ void InfoNES_MessageBox( const char *pszMsg, ... )
 
   rt_kprintf( "%s", pszErr );
 }
-
-#if 0
-void close_dialog( GtkWidget *widget, gpointer data )
-{
-  gtk_widget_destroy( GTK_WIDGET( data ) );
-}
-
-void closing_dialog( GtkWidget *widget, gpointer data )
-{
-  gtk_grab_remove( GTK_WIDGET( widget ) );
-}
-#endif
 
 /*
  * End of InfoNES_System_rtt.cpp
