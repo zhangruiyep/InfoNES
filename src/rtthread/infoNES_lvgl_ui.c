@@ -104,14 +104,20 @@ static void nes_ui_obj_init(lv_obj_t *parent)
     nes_ui_pad_init(pad);
 }
 
+/* call lv functions in lv task */
+static bool nes_canvas_need_refresh = false;
 void nes_page_refresh(lv_task_t *task)
 {
-
+    if (nes_canvas_need_refresh)
+    {
+        lv_obj_invalidate (p_nes->canvas);
+        nes_canvas_need_refresh = false;
+    }
 }
 
 void nes_canvas_refresh(void)
 {
-    lv_obj_invalidate (p_nes->canvas);
+    nes_canvas_need_refresh = true;
 }
 
 static void on_start(void)
@@ -157,7 +163,7 @@ static void on_resume(void)
     /* refresh task */
     if (NULL == p_nes->refresh_task)
     {
-        p_nes->refresh_task = lv_task_create(nes_page_refresh, CLOCK_REFRESH_PERIOD, LV_TASK_PRIO_LOW, (void *)0);
+        p_nes->refresh_task = lv_task_create(nes_page_refresh, (1000/60), LV_TASK_PRIO_LOW, (void *)0);
     }
     nes_page_refresh(NULL);
 }
