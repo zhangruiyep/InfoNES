@@ -58,6 +58,6 @@ int InfoNES_audio_write(uint8_t *data, uint32_t data_len)
         LOG_D("%s: not open", __func__);
         return 0;
     }
-    LOG_D("%s: write %d", __func__, data_len);
+    //LOG_D("%s: write %d", __func__, data_len);
     return audio_write(g_speaker, data, data_len);
 }

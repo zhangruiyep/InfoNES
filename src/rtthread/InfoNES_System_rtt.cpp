@@ -559,19 +559,7 @@ void *InfoNES_MemorySet( void *dest, int c, int count )
 /*===================================================================*/
 void InfoNES_LoadFrame()
 {
-#if 0
-  for ( int y = 0; y < NES_DISP_HEIGHT; y++ )
-  {
-    for ( int x = 0; x < NES_DISP_WIDTH; x++ )
-    {
-      /* RGB555 to RGB565 */
-      WORD wColor = WorkFrame[ ( y << 8 ) + x ];
-      canvas_buffer[ ( y << 8 ) + x ] = (wColor & 0x7c00) << 1  //R: keep format, move position
-        | (wColor & 0x03e0) << 1 | (wColor & 0x0200) >> 4 //G: 5 bits expend to 6 bits, fill bit0 with bit4
-        | (wColor & 0x001f) ; //B: keep format
-    }
-  }
-#endif
+  //rt_tick_t start = rt_tick_get();
   DWORD *p_src = (DWORD *)WorkFrame;
   DWORD *p_dst = (DWORD *)canvas_buffer;
   for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH / 2; i++ )
@@ -581,6 +569,8 @@ void InfoNES_LoadFrame()
     p_dst++;
   }
   nes_canvas_refresh();
+  //rt_tick_t end = rt_tick_get();
+  //InfoNES_MessageBox( "%s took %d tick\n", __func__, end - start );
 }
 
 /*===================================================================*/
@@ -655,40 +645,22 @@ void InfoNES_SoundClose( void )
 void InfoNES_SoundOutput( int samples, BYTE *wave1, BYTE *wave2, BYTE *wave3, BYTE *wave4, BYTE *wave5 )
 {
   int i;
-
-  //if ( sound_fd )
+  //rt_tick_t start = rt_tick_get();
+  for (i = 0; i < samples; i++)
   {
-    for (i = 0; i < samples; i++)
-    {
-#if 1
-      final_wave[ waveptr ] =
-	( wave1[i] + wave2[i] + wave3[i] + wave4[i] + wave5[i] ) / 5;
-#else
-      final_wave[ waveptr ] = wave4[i];
-#endif
-
-
-      waveptr++;
-      if ( waveptr == 2048 )
-      {
-	waveptr = 0;
-	wavflag = 2;
-      }
-      else if ( waveptr == 1024 )
-      {
-	wavflag = 1;
-      }
-    }
-
-    if ( wavflag )
-    {
-      if ( InfoNES_audio_write( &final_wave[(wavflag - 1) << 10], 1024) < 1024 )
-      {
-	InfoNES_MessageBox( "wrote less than 1024 bytes\n" );
-      }
-      wavflag = 0;
-    }
+    final_wave[ waveptr ] =	( wave1[i] + wave2[i] + wave3[i] + wave4[i] + wave5[i] ) / 5;
+    waveptr++;
   }
+  if ( waveptr )
+  {
+    if ( InfoNES_audio_write( final_wave, samples) < samples )
+    {
+      InfoNES_MessageBox( "wrote less than %d bytes\n", samples );
+    }
+    waveptr = 0;
+  }
+  //rt_tick_t end = rt_tick_get();
+  //InfoNES_MessageBox( "%s took %d tick\n", __func__, end - start );
 }
 
 /*===================================================================*/
