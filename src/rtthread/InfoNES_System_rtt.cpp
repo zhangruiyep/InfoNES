@@ -137,7 +137,7 @@ void start_application( void )
     /* Create Emulation Thread */
     g_nes_tid = rt_thread_create("nes_emu",
                            emulation_thread, RT_NULL,
-                           4096, RT_THREAD_PRIORITY_LOW, RT_THREAD_TICK_DEFAULT);
+                           4096, RT_THREAD_PRIORITY_MIDDLE, RT_THREAD_TICK_DEFAULT);
 
     if (g_nes_tid != RT_NULL)
         rt_thread_startup(g_nes_tid);
@@ -559,16 +559,26 @@ void *InfoNES_MemorySet( void *dest, int c, int count )
 /*===================================================================*/
 void InfoNES_LoadFrame()
 {
+#if 0
   for ( int y = 0; y < NES_DISP_HEIGHT; y++ )
   {
     for ( int x = 0; x < NES_DISP_WIDTH; x++ )
     {
-      WORD wColor = WorkFrame[ ( y << 8 ) + x ];
       /* RGB555 to RGB565 */
+      WORD wColor = WorkFrame[ ( y << 8 ) + x ];
       canvas_buffer[ ( y << 8 ) + x ] = (wColor & 0x7c00) << 1  //R: keep format, move position
-      | (wColor & 0x03e0) << 1 | (wColor & 0x0200) >> 4 //G: 5 bits expend to 6 bits, fill bit0 with bit4
-      | (wColor & 0x001f) ; //B: keep format
+        | (wColor & 0x03e0) << 1 | (wColor & 0x0200) >> 4 //G: 5 bits expend to 6 bits, fill bit0 with bit4
+        | (wColor & 0x001f) ; //B: keep format
     }
+  }
+#endif
+  WORD *p_src = WorkFrame;
+  WORD *p_dst = canvas_buffer;
+  for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH; i++ )
+  {
+    *p_dst = (*p_src & 0x7FE0) << 1 | (*p_src & 0x001f);
+    p_src++;
+    p_dst++;
   }
   nes_canvas_refresh();
 }
