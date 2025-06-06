@@ -9,7 +9,7 @@
 #define NES_DISP_HEIGHT     240
 
 //extern WORD WorkFrame[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
-unsigned short canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
+unsigned short canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ ((aligned (4)));
 extern void start_application( void );
 extern void close_application( void );
 

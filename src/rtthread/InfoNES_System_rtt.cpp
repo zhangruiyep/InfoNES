@@ -572,11 +572,11 @@ void InfoNES_LoadFrame()
     }
   }
 #endif
-  WORD *p_src = WorkFrame;
-  WORD *p_dst = canvas_buffer;
-  for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH; i++ )
+  DWORD *p_src = (DWORD *)WorkFrame;
+  DWORD *p_dst = (DWORD *)canvas_buffer;
+  for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH / 2; i++ )
   {
-    *p_dst = (*p_src & 0x7FE0) << 1 | (*p_src & 0x001f);
+    *p_dst = (*p_src & 0x7FE07FE0) << 1 | (*p_src & 0x001F001F);
     p_src++;
     p_dst++;
   }
