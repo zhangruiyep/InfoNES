@@ -51,7 +51,10 @@ int nSRAM_SaveFlag;
 /*-------------------------------------------------------------------*/
 /*  Global Variables ( rt-thread specific )                              */
 /*-------------------------------------------------------------------*/
-rt_thread_t g_nes_tid;
+rt_thread_t g_nes_tid;  //main thread
+rt_thread_t g_cpu_tid;  //cpu thread
+static rt_mq_t nes_mq;
+static volatile bool cpu_busy = false;
 
 /* Pad state */
 //DWORD dwKeyPad1;
@@ -116,6 +119,25 @@ void emulation_thread(void *args)
   return;
 }
 
+extern void K6502_Step( WORD wClocks );
+void cpu_thread(void *args)
+{
+  WORD nStep;
+  while ( rt_mq_recv(nes_mq, &nStep, sizeof(nStep), RT_WAITING_FOREVER) == RT_EOK )
+  {
+    cpu_busy = true;
+    K6502_Step( nStep );
+    cpu_busy = false;
+  }
+}
+
+void send_msg_to_cpu(WORD nStep)
+{
+  while ( cpu_busy ) ;
+  rt_mq_send(nes_mq, &nStep, sizeof(nStep));
+  //rt_kprintf( "%s send %d\n", __func__, nStep );
+}
+
 /*===================================================================*/
 /*                                                                   */
 /*     start_application() : Start NES Hardware                      */
@@ -134,6 +156,8 @@ void start_application( void )
     LoadSRAM();
     rt_kprintf( "Load SRAM done\n" );
 
+    nes_mq = rt_mq_create("nes_mq", sizeof(WORD), 4, RT_IPC_FLAG_FIFO);
+    RT_ASSERT(nes_mq);
     /* Create Emulation Thread */
     g_nes_tid = rt_thread_create("nes_emu",
                            emulation_thread, RT_NULL,
@@ -141,6 +165,13 @@ void start_application( void )
 
     if (g_nes_tid != RT_NULL)
         rt_thread_startup(g_nes_tid);
+
+    g_cpu_tid = rt_thread_create("nes_cpu",
+                           cpu_thread, RT_NULL,
+                           4096, RT_THREAD_PRIORITY_MIDDLE-1, RT_THREAD_TICK_DEFAULT);
+
+    if (g_cpu_tid != RT_NULL)
+        rt_thread_startup(g_cpu_tid);
   }
 
   //FrameSkip = 2;
@@ -156,10 +187,22 @@ void close_application( void )
   /* Save SRAM*/
   SaveSRAM();
 
+  InfoNES_SoundClose();
+
   if ( g_nes_tid != RT_NULL )
   {
     rt_thread_delete( g_nes_tid );
     g_nes_tid = RT_NULL;
+  }
+  if ( g_cpu_tid != RT_NULL )
+  {
+    rt_thread_delete( g_cpu_tid );
+    g_cpu_tid = RT_NULL;
+  }
+  if (nes_mq)
+  {
+    rt_mq_delete(nes_mq);
+    nes_mq = RT_NULL;
   }
 }
 
