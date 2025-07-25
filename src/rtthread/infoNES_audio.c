@@ -1,10 +1,8 @@
 
 #include "rtthread.h"
-#include "global.h"
 #include <audio_server.h>
 
-#define _MODULE_NAME_ "infoNES"
-#include "app_module.h"
+#define LOG_D rt_kprintf
 
 static audio_client_t g_speaker = NULL;
 

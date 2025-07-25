@@ -3,9 +3,8 @@ from building import *
 
 cwd = GetCurrentDir()
 objs = []
-list = os.listdir(cwd)
 
 objs = Glob('*.cpp') + Glob('*.c')
-group = DefineGroup('solution_application', objs, depend = ['PKG_USING_NES'], CPPPATH = [cwd])
+group = DefineGroup('infoNES', objs, depend = [''], CPPPATH = [cwd])
 
 Return('group')

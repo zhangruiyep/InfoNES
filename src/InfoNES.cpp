@@ -40,6 +40,7 @@
 #include "InfoNES_Mapper.h"
 #include "InfoNES_pAPU.h"
 #include "K6502.h"
+#include "mem_section.h"
 
 /*-------------------------------------------------------------------*/
 /*  NES resources                                                    */
@@ -52,7 +53,7 @@ BYTE RAM[ RAM_SIZE ];
 BYTE SRAM[ SRAM_SIZE ];
 
 /* ROM */
-BYTE *ROM;
+BYTE *ROM = NULL;
 
 /* SRAM BANK ( 8Kb ) */
 BYTE *SRAMBANK;
@@ -71,7 +72,7 @@ BYTE *ROMBANK3;
 BYTE PPURAM[ PPURAM_SIZE ];
 
 /* VROM */
-BYTE *VROM;
+BYTE *VROM = NULL;
 
 /* PPU BANK ( 1Kb * 16 ) */
 BYTE *PPUBANK[ 16 ];
@@ -138,7 +139,7 @@ BYTE byVramWriteEnable;
 /* PPU Address and Scroll Latch Flag*/
 BYTE PPU_Latch_Flag;
 
-/* Up and Down Clipping Flag ( 0: non-clip, 1: clip ) */ 
+/* Up and Down Clipping Flag ( 0: non-clip, 1: clip ) */
 BYTE PPU_UpDown_Clip;
 
 /* Frame IRQ ( 0: Disabled, 1: Enabled )*/
@@ -154,13 +155,7 @@ WORD FrameSkip;
 WORD FrameCnt;
 
 /* Display Buffer */
-#if 0
-WORD DoubleFrame[ 2 ][ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
-WORD *WorkFrame;
-WORD WorkFrameIdx;
-#else
 WORD WorkFrame[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ ((aligned (4)));
-#endif
 
 /* Character Buffer */
 BYTE ChrBuf[ 256 * 2 * 8 * 8 ];
@@ -317,21 +312,25 @@ int InfoNES_Load( const char *pszFileName )
  *    -1 : An error occurred.
  *
  *  Remarks
- *    Read a ROM image in the memory. 
+ *    Read a ROM image in the memory.
  *    Reset InfoNES.
  */
 
+  rt_kprintf("%s release rom\n", __func__);
   // Release a memory for ROM
   InfoNES_ReleaseRom();
 
+  rt_kprintf("%s read rom\n", __func__);
   // Read a ROM image in the memory
   if ( InfoNES_ReadRom( pszFileName ) < 0 )
     return -1;
 
+  rt_kprintf("%s reset\n", __func__);
   // Reset InfoNES
   if ( InfoNES_Reset() < 0 )
     return -1;
 
+  rt_kprintf("%s done\n", __func__);
   // Successful
   return 0;
 }
@@ -493,7 +492,7 @@ void InfoNES_SetupPPU()
   // Reset scanline
   PPU_Scanline = 0;
 
-  // Reset hit position of sprite #0 
+  // Reset hit position of sprite #0
   SpriteJustHit = 0;
 
   // Reset information on PPU_R0
@@ -564,7 +563,7 @@ void InfoNES_Main()
     /*-------------------------------------------------------------------*/
     if ( InfoNES_Menu() == -1 )
       break;  // Quit
-    
+
     /*-------------------------------------------------------------------*/
     /*  Start a NES emulation                                            */
     /*-------------------------------------------------------------------*/
@@ -595,7 +594,7 @@ void InfoNES_Cycle()
 
   // Emulation loop
   for (;;)
-  {    
+  {
     int nStep;
 
     // Set a flag if a scanning line is a hit in the sprite #0
@@ -639,7 +638,7 @@ void InfoNES_Cycle()
 
     // A mapper function in H-Sync
     MapperHSync();
-    
+
     // A function in H-Sync
     if ( InfoNES_HSync() == -1 )
       return;  // To the menu screen
@@ -711,7 +710,7 @@ int InfoNES_HSync()
       {
         // Transfer the contents of work frame on the screen
         InfoNES_LoadFrame();
-        
+
 #if 0
         // Switching of the double buffer
         WorkFrameIdx = 1 - WorkFrameIdx;
@@ -739,15 +738,15 @@ int InfoNES_HSync()
 
       // Get the condition of the joypad
       InfoNES_PadState( &PAD1_Latch, &PAD2_Latch, &PAD_System );
-      
+
       // NMI on V-Blank
       if ( PPU_R0 & R0_NMI_VB )
         NMI_REQ;
 
       // Exit an emulation if a QUIT button is pushed
       if ( PAD_PUSH( PAD_System, PAD_SYS_QUIT ) )
-        return -1;  // Exit an emulation      
-      
+        return -1;  // Exit an emulation
+
       break;
   }
 
@@ -855,7 +854,7 @@ void InfoNES_DrawLine()
       pbyChrData = PPU_BG_Base + ( *pbyNameTable << 6 ) + nYBit;
       pPalTbl = &PalTable[ ( ( ( pAttrBase[ nX >> 2 ] >> ( ( nX & 2 ) + nY4 ) ) & 3 ) << 2 ) ];
 
-      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ]; 
+      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ];
       pPoint[ 1 ] = pPalTbl[ pbyChrData[ 1 ] ];
       pPoint[ 2 ] = pPalTbl[ pbyChrData[ 2 ] ];
       pPoint[ 3 ] = pPalTbl[ pbyChrData[ 3 ] ];
@@ -886,7 +885,7 @@ void InfoNES_DrawLine()
       pbyChrData = PPU_BG_Base + ( *pbyNameTable << 6 ) + nYBit;
       pPalTbl = &PalTable[ ( ( ( pAttrBase[ nX >> 2 ] >> ( ( nX & 2 ) + nY4 ) ) & 3 ) << 2 ) ];
 
-      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ]; 
+      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ];
       pPoint[ 1 ] = pPalTbl[ pbyChrData[ 1 ] ];
       pPoint[ 2 ] = pPalTbl[ pbyChrData[ 2 ] ];
       pPoint[ 3 ] = pPalTbl[ pbyChrData[ 3 ] ];
@@ -930,14 +929,14 @@ void InfoNES_DrawLine()
     /*-------------------------------------------------------------------*/
     /*  Clear a scanline if up and down clipping flag is set             */
     /*-------------------------------------------------------------------*/
-    if ( PPU_UpDown_Clip && 
+    if ( PPU_UpDown_Clip &&
        ( SCAN_ON_SCREEN_START > PPU_Scanline || PPU_Scanline > SCAN_BOTTOM_OFF_SCREEN_START ) )
     {
       WORD *pPointTop;
 
       pPointTop = &WorkFrame[ PPU_Scanline * NES_DISP_WIDTH ];
       InfoNES_MemorySet( pPointTop, 0, NES_DISP_WIDTH << 1 );
-    }  
+    }
   }
 
   /*-------------------------------------------------------------------*/
@@ -969,7 +968,7 @@ void InfoNES_DrawLine()
 
       // Holizontal Sprite Count +1
       ++nSprCnt;
-      
+
       nAttr = pSPRRAM[ SPR_ATTR ];
       nYBit = PPU_Scanline - nY;
       nYBit = ( nAttr & SPR_ATTR_V_FLIP ) ? ( PPU_SP_Height - nYBit - 1 ) << 3 : nYBit << 3;
@@ -1104,7 +1103,7 @@ void InfoNES_GetSprHitY()
     else
     {
       pdwChrData = (DWORD * )( ChrBuf + ( ( SPRRAM[ SPR_CHR ] & 0xfe ) << 6 ) + nYBit );
-    } 
+    }
   }
   else
   {

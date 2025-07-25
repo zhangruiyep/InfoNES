@@ -30,7 +30,7 @@
 #include "../InfoNES_System.h"
 #include "../InfoNES_pAPU.h"
 
-#define NES_ROM_NAME	"/dyn/preset_user/nes/SuperMarioBros.nes"
+#define NES_ROM_NAME	"/SMB.nes"
 
 /*-------------------------------------------------------------------*/
 /*  ROM image file information                                       */
@@ -148,10 +148,12 @@ void start_application( void )
   /* Set a ROM image name */
   strcpy( szRomName, NES_ROM_NAME );
 
+  ROM = NULL;
+  VROM = NULL;
+
   /* Load cassette */
   if ( InfoNES_Load ( szRomName ) == 0 )
   {
-    rt_kprintf( "Load %s OK\n", szRomName );
     /* Load SRAM */
     LoadSRAM();
     rt_kprintf( "Load SRAM done\n" );
