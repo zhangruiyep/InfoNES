@@ -605,8 +605,7 @@ void InfoNES_Cycle()
       nStep = SPRRAM[ SPR_X ] * STEP_PER_SCANLINE / NES_DISP_WIDTH;
 
       // Execute instructions
-      //K6502_Step( nStep );
-      send_msg_to_cpu( nStep );
+      K6502_Step( nStep );
 
       // Set a sprite hit flag
       if ( ( PPU_R1 & R1_SHOW_SP ) && ( PPU_R1 & R1_SHOW_SCR ) )
@@ -617,14 +616,12 @@ void InfoNES_Cycle()
         NMI_REQ;
 
       // Execute instructions
-      //K6502_Step( STEP_PER_SCANLINE - nStep );
-      send_msg_to_cpu( STEP_PER_SCANLINE - nStep );
+      K6502_Step( STEP_PER_SCANLINE - nStep );
     }
     else
     {
       // Execute instructions
-      //K6502_Step( STEP_PER_SCANLINE );
-      send_msg_to_cpu( STEP_PER_SCANLINE );
+      K6502_Step( STEP_PER_SCANLINE );
     }
 
     // Frame IRQ in H-Sync

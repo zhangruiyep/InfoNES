@@ -66,6 +66,4 @@ void InfoNES_SoundOutput(int samples, BYTE *wave1, BYTE *wave2, BYTE *wave3, BYT
 /* Print system message */
 void InfoNES_MessageBox( const char *pszMsg, ... );
 
-void send_msg_to_cpu(WORD nStep);
-
 #endif /* !InfoNES_SYSTEM_H_INCLUDED */
