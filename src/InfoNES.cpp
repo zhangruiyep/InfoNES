@@ -47,10 +47,10 @@
 /*-------------------------------------------------------------------*/
 
 /* RAM */
-BYTE RAM[ RAM_SIZE ];
+BYTE RAM[ RAM_SIZE ] __attribute__ ((aligned (4)));
 
 /* SRAM */
-BYTE SRAM[ SRAM_SIZE ];
+BYTE SRAM[ SRAM_SIZE ] __attribute__ ((aligned (4)));
 
 /* ROM */
 BYTE *ROM = NULL;
@@ -69,7 +69,7 @@ BYTE *ROMBANK3;
 /*-------------------------------------------------------------------*/
 
 /* PPU RAM */
-BYTE PPURAM[ PPURAM_SIZE ];
+BYTE PPURAM[ PPURAM_SIZE ] __attribute__ ((aligned (4)));
 
 /* VROM */
 BYTE *VROM = NULL;
@@ -78,7 +78,7 @@ BYTE *VROM = NULL;
 BYTE *PPUBANK[ 16 ];
 
 /* Sprite RAM */
-BYTE SPRRAM[ SPRRAM_SIZE ];
+BYTE SPRRAM[ SPRRAM_SIZE ] __attribute__ ((aligned (4)));
 
 /* PPU Register */
 BYTE PPU_R0;
@@ -158,7 +158,7 @@ WORD FrameCnt;
 WORD WorkFrame[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ ((aligned (4)));
 
 /* Character Buffer */
-BYTE ChrBuf[ 256 * 2 * 8 * 8 ];
+BYTE ChrBuf[ 256 * 2 * 8 * 8 ] __attribute__ ((aligned (4)));
 
 /* Update flag for ChrBuf */
 BYTE ChrBufUpdate;
