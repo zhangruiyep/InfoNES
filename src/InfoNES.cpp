@@ -316,21 +316,17 @@ int InfoNES_Load( const char *pszFileName )
  *    Reset InfoNES.
  */
 
-  rt_kprintf("%s release rom\n", __func__);
   // Release a memory for ROM
   InfoNES_ReleaseRom();
 
-  rt_kprintf("%s read rom\n", __func__);
   // Read a ROM image in the memory
   if ( InfoNES_ReadRom( pszFileName ) < 0 )
     return -1;
 
-  rt_kprintf("%s reset\n", __func__);
   // Reset InfoNES
   if ( InfoNES_Reset() < 0 )
     return -1;
 
-  rt_kprintf("%s done\n", __func__);
   // Successful
   return 0;
 }
@@ -554,6 +550,7 @@ void InfoNES_Main()
 
   // Initialize InfoNES
   InfoNES_Init();
+  InfoNES_MessageBox( "%s init done\n", __func__ );
 
   // Main loop
   while ( 1 )

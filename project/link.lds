@@ -480,10 +480,14 @@ SECTIONS
     *(.*l2_non_ret_bss_*)
     *(.*l2_cache_non_ret_data_*)
     *(.*l2_cache_non_ret_bss_*)
-    *InfoNES.o(.bss.*)
+    *InfoNES.o(.bss.ChrBuf)
+    *InfoNES.o(.bss.WorkFrame)
+    *InfoNES.o(.bss.PPURAM)
+    *InfoNES.o(.bss.SRAM)
+    *InfoNES.o(.bss.RAM)
     *infoNES_lvgl_ui.o(.bss.*)
     *InfoNES_Mapper.o(.bss.*)
-    *InfoNES_System_rtt.o(.bss.*)
+    *InfoNES_System_rtt.o(.bss.final_wave)
     . = ALIGN(4);
     __RW_PSRAM_NON_RET_end__ = .;
 

@@ -13,7 +13,7 @@ unsigned short canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ (
 extern void start_application( void );
 extern void close_application( void );
 
-unsigned int dwKeyPad1;
+unsigned int dwKeyPad1 = 0;
 
 typedef struct
 {
@@ -68,6 +68,7 @@ static lv_obj_t* nes_ui_btn_create(lv_obj_t *parent, nes_btn_id_t btn_id)
 
 static void nes_ui_pad_init(lv_obj_t *parent)
 {
+    dwKeyPad1 = 0;
     // + buttons
     lv_obj_t *btn_up = nes_ui_btn_create(parent, NES_BTN_UP);
     lv_obj_align(btn_up, LV_ALIGN_LEFT_MID, NES_BTN_SIZE, -NES_BTN_SIZE);
