@@ -1,5 +1,6 @@
 
 #include "rtthread.h"
+#if CONFIG_PKG_USING_LITTLEVGL2RTT
 #include "littlevgl2rtt.h"
 #include "mem_section.h"
 
@@ -209,3 +210,4 @@ APP_MSG_HANDLER_REGISTER(on_start, on_resume, on_pause, on_stop);
 APPLICATION_REGISTER(app_get_strid(key_nes, "Nes"), img_menu_dice,
                      "Nes", sizeof(app_nes_t));
 #endif
+#endif  //CONFIG_PKG_USING_LITTLEVGL2RTT

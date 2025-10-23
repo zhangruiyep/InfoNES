@@ -10,7 +10,7 @@ src=Glob('*.c')+Glob('*.cpp')
 inc+=[cwd]
 inc+=[cwd+'/rtthread']
 
-group = DefineGroup('infoNES', src, depend = ['PKG_USING_LITTLEVGL2RTT'], CPPPATH = inc)
+group = DefineGroup('infoNES', src, depend = [''], CPPPATH = inc)
 for d in os.listdir(cwd):
     path = os.path.join(cwd, d)
     if os.path.isfile(os.path.join(path, 'SConscript')):

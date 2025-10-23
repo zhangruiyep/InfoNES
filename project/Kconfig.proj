@@ -1,9 +1,13 @@
 #APP specific configuration.
 config CUSTOM_MEM_MAP
-    bool 
+    bool
 	select custom_mem_map
 	default y if !SOC_SIMULATOR
-    
+
 config LV_BUILD_EXAMPLES
-    bool 
+    bool
+    default n
+
+config NES_USING_LVGL
+    bool
     default n

@@ -69,9 +69,14 @@ extern "C" {
 #endif
 /* Pad state */
 extern DWORD dwKeyPad1;
+#if NES_USING_LVGL
 /* lv canvas for display */
 extern WORD canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 extern void nes_canvas_refresh(void);
+#else
+extern WORD lcd_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
+extern void nes_lcd_refresh(void);
+#endif
 /* audio */
 extern void infoNES_audio_init(void);
 extern int infoNES_audio_open(int samples_per_sync, int sample_rate);
@@ -563,14 +568,22 @@ void InfoNES_LoadFrame()
 {
   //rt_tick_t start = rt_tick_get();
   DWORD *p_src = (DWORD *)WorkFrame;
+#if NES_USING_LVGL
   DWORD *p_dst = (DWORD *)canvas_buffer;
+#else
+  DWORD *p_dst = (DWORD *)lcd_buffer;
+#endif
   for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH / 2; i++ )
   {
     *p_dst = (*p_src & 0x7FE07FE0) << 1 | (*p_src & 0x001F001F);
     p_src++;
     p_dst++;
   }
+#if NES_USING_LVGL
   nes_canvas_refresh();
+#else
+  nes_lcd_refresh();
+#endif
   //rt_tick_t end = rt_tick_get();
   //InfoNES_MessageBox( "%s took %d tick\n", __func__, end - start );
 }
