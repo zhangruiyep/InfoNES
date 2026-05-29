@@ -482,12 +482,7 @@ static inline void K6502_Write( WORD wAddr, BYTE byData )
 }
 
 // Reading/Writing operation (WORD version)
-//static inline WORD K6502_ReadW( WORD wAddr ){ return K6502_Read( wAddr ) | (WORD)K6502_Read( wAddr + 1 ) << 8; };
-static inline WORD K6502_ReadW( WORD wAddr )
-{
-  /* only PC read from VECTOR use this, so we can use WORD ops for better performance */
-  return *(WORD *)&ROMBANK3[ wAddr & 0x1fff ];
-}
+static inline WORD K6502_ReadW( WORD wAddr ){ return K6502_Read( wAddr ) | (WORD)K6502_Read( wAddr + 1 ) << 8; };
 static inline void K6502_WriteW( WORD wAddr, WORD wData ){ K6502_Write( wAddr, wData & 0xff ); K6502_Write( wAddr + 1, wData >> 8 ); };
 static inline WORD K6502_ReadZpW( BYTE byAddr ){ return K6502_ReadZp( byAddr ) | ( K6502_ReadZp( byAddr + 1 ) << 8 ); };
 
