@@ -1,11 +1,22 @@
-import os
 from building import *
+import rtconfig
+import os
 
 cwd = GetCurrentDir()
 objs = []
 list = os.listdir(cwd)
 
 objs = Glob('*.cpp') + Glob('*.c')
+
+# Remove LVGL UI files from glob list (handled separately by version)
+objs = [f for f in objs if 'infoNES_lvgl_ui' not in str(f)]
+
+# Select LVGL UI file based on LVGL version
+if GetDepend('LVGL_V8'):
+    objs += Glob('infoNES_lvgl_ui_v8.c')
+else:
+    objs += Glob('infoNES_lvgl_ui_v7.c')
+
 group = DefineGroup('solution_application', objs, depend = ['PKG_USING_NES'], CPPPATH = [cwd])
 
 Return('group')

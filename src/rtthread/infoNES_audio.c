@@ -1,17 +1,17 @@
 
 #include "rtthread.h"
-#include "global.h"
 #include <audio_server.h>
 
-#define _MODULE_NAME_ "infoNES"
-#include "app_module.h"
+#define DBG_TAG "infoNES"
+#define DBG_LVL DBG_INFO
+#include <rtdbg.h>
 
 static audio_client_t g_speaker = NULL;
 
 void infoNES_audio_init(void)
 {
     g_speaker = NULL;
-    audio_server_set_private_volume(AUDIO_TYPE_LOCAL_MUSIC, 9);//设置音量
+    audio_server_set_private_volume(AUDIO_TYPE_LOCAL_MUSIC, 9);
 }
 
 int infoNES_audio_open(int samples_per_sync, int sample_rate)
@@ -58,6 +58,5 @@ int InfoNES_audio_write(uint8_t *data, uint32_t data_len)
         LOG_D("%s: not open", __func__);
         return 0;
     }
-    //LOG_D("%s: write %d", __func__, data_len);
     return audio_write(g_speaker, data, data_len);
 }

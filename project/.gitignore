@@ -1,0 +1,4 @@
+__pycache__/
+build_sf32lb52-lchspi-ulp_hcpu/
+.sconsign.dblite
+Kconfig.tmp

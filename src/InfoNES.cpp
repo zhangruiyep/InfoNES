@@ -68,7 +68,7 @@ BYTE *ROMBANK3;
 /*-------------------------------------------------------------------*/
 
 /* PPU RAM */
-BYTE PPURAM[ PPURAM_SIZE ];
+BYTE PPURAM[ PPURAM_SIZE ] __attribute__ ((section(".l2_non_ret_bss_nes")));
 
 /* VROM */
 BYTE *VROM;
@@ -159,11 +159,11 @@ WORD DoubleFrame[ 2 ][ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
 WORD *WorkFrame;
 WORD WorkFrameIdx;
 #else
-WORD WorkFrame[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ ((aligned (4)));
+WORD WorkFrame[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ ((aligned (4), section(".l2_non_ret_bss_nes")));
 #endif
 
 /* Character Buffer */
-BYTE ChrBuf[ 256 * 2 * 8 * 8 ];
+BYTE ChrBuf[ 256 * 2 * 8 * 8 ] __attribute__ ((section(".l2_non_ret_bss_nes")));
 
 /* Update flag for ChrBuf */
 BYTE ChrBufUpdate;

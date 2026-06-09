@@ -1,0 +1,18 @@
+#APP specific configuration.
+config BF0_HCPU
+    bool
+    default y
+
+config CUSTOM_MEM_MAP
+    bool
+    select custom_mem_map
+    default y if !SOC_SIMULATOR
+
+config PKG_USING_NES
+    default n
+    bool "Enable NES emulator"
+
+config NES_SINGLE_APP
+    bool "NES as single/only application"
+    depends on PKG_USING_NES
+    default y
