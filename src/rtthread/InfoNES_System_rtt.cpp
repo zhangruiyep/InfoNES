@@ -112,7 +112,9 @@ WORD NesPalette[ 64 ] =
 
 void emulation_thread(void *args)
 {
+  rt_kprintf("[NES] emulation_thread start, calling InfoNES_Main()\n");
   InfoNES_Main();
+  rt_kprintf("[NES] InfoNES_Main() exited\n");
   return;
 }
 
@@ -125,6 +127,7 @@ void start_application( void )
 {
   /* Set a ROM image name */
   strcpy( szRomName, NES_ROM_NAME );
+  rt_kprintf("[NES] Loading ROM: %s\n", szRomName);
 
   /* Load cassette */
   if ( InfoNES_Load ( szRomName ) == 0 )
@@ -139,8 +142,15 @@ void start_application( void )
                            emulation_thread, RT_NULL,
                            4096, RT_THREAD_PRIORITY_MIDDLE, RT_THREAD_TICK_DEFAULT);
 
-    if (g_nes_tid != RT_NULL)
+    if (g_nes_tid != RT_NULL) {
+        rt_kprintf("[NES] Starting nes_emu thread\n");
         rt_thread_startup(g_nes_tid);
+        rt_kprintf("[NES] nes_emu thread started\n");
+    }
+  }
+  else
+  {
+    rt_kprintf("[NES] ERROR: Failed to load ROM %s\n", szRomName);
   }
 
   //FrameSkip = 2;

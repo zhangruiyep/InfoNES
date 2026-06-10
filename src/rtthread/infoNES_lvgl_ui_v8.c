@@ -137,8 +137,11 @@ static void nes_ui_obj_init(void)
 
 void nes_ui_init(void)
 {
+    rt_kprintf("[NES] nes_ui_obj_init start\n");
     nes_ui_obj_init();
+    rt_kprintf("[NES] nes_ui_obj_init done\n");
     g_refresh_timer = lv_timer_create(nes_page_refresh, (1000/60), NULL);
-    LOG_D("start application");
+    rt_kprintf("[NES] lv_timer_create done, calling start_application\n");
     start_application();
+    rt_kprintf("[NES] start_application returned\n");
 }
