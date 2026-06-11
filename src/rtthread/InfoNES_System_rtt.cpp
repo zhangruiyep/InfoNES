@@ -30,7 +30,7 @@
 #include "../InfoNES_System.h"
 #include "../InfoNES_pAPU.h"
 
-#define NES_ROM_NAME	"/dyn/preset_user/nes/SuperMarioBros.nes"
+#define NES_ROM_NAME	"/preset_user/nes/SuperMarioBros.nes"
 
 /*-------------------------------------------------------------------*/
 /*  ROM image file information                                       */
