@@ -40,6 +40,7 @@
 #include "InfoNES_Mapper.h"
 #include "InfoNES_pAPU.h"
 #include "K6502.h"
+#include <rtthread.h>  // profiling
 
 /*-------------------------------------------------------------------*/
 /*  NES resources                                                    */
@@ -608,6 +609,7 @@ void InfoNES_Cycle()
       nStep = SPRRAM[ SPR_X ] * STEP_PER_SCANLINE / NES_DISP_WIDTH;
 
       // Execute instructions
+      rt_tick_t _ct = rt_tick_get();
       K6502_Step( nStep );
 
       // Set a sprite hit flag
@@ -620,11 +622,14 @@ void InfoNES_Cycle()
 
       // Execute instructions
       K6502_Step( STEP_PER_SCANLINE - nStep );
+      g_prof_cpu_ticks += rt_tick_get() - _ct;
     }
     else
     {
       // Execute instructions
+      rt_tick_t _ct = rt_tick_get();
       K6502_Step( STEP_PER_SCANLINE );
+      g_prof_cpu_ticks += rt_tick_get() - _ct;
     }
 
     // Frame IRQ in H-Sync
@@ -669,7 +674,9 @@ int InfoNES_HSync()
   if ( FrameCnt == 0 &&
        PPU_ScanTable[ PPU_Scanline ] == SCAN_ON_SCREEN )
   {
+    rt_tick_t _dt = rt_tick_get();
     InfoNES_DrawLine();
+    g_prof_ppu_ticks += rt_tick_get() - _dt;
   }
 
   /*-------------------------------------------------------------------*/
@@ -730,8 +737,11 @@ int InfoNES_HSync()
       PPU_Latch_Flag = 0;
 
       // pAPU Sound function in V-Sync
-      if ( !APU_Mute )
+      if ( !APU_Mute ) {
+        rt_tick_t _at = rt_tick_get();
         InfoNES_pAPUVsync();
+        g_prof_aud_ticks += rt_tick_get() - _at;
+      }
 
       // A mapper function in V-Sync
       MapperVSync();

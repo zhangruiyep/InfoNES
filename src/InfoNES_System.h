@@ -69,4 +69,12 @@ void InfoNES_MessageBox( const char *pszMsg, ... );
 /* FPS (Frames Per Second) counter value */
 extern int g_nes_fps;
 
+/* Performance profiling (ticks per frame, averaged over 60 frames) */
+extern DWORD g_prof_cpu_ticks;
+extern DWORD g_prof_ppu_ticks;
+extern DWORD g_prof_dsp_ticks;
+extern DWORD g_prof_aud_ticks;
+extern WORD  g_prof_frame_cnt;
+void PROF_Report(void);
+
 #endif /* !InfoNES_SYSTEM_H_INCLUDED */

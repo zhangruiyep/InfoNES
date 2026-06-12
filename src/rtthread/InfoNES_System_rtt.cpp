@@ -572,9 +572,30 @@ int g_nes_fps = 0;
 static int g_fps_frame_cnt = 0;
 static rt_tick_t g_fps_last_tick = 0;
 
+/* Profiling accumulators */
+DWORD g_prof_cpu_ticks = 0;
+DWORD g_prof_ppu_ticks = 0;
+DWORD g_prof_dsp_ticks = 0;
+DWORD g_prof_aud_ticks = 0;
+WORD  g_prof_frame_cnt = 0;
+
+void PROF_Report(void)
+{
+  rt_kprintf("[PROF] CPU=%d PPU=%d DSP=%d AUD=%d tks/frm\n",
+    (int)(g_prof_cpu_ticks / g_prof_frame_cnt),
+    (int)(g_prof_ppu_ticks / g_prof_frame_cnt),
+    (int)(g_prof_dsp_ticks / g_prof_frame_cnt),
+    (int)(g_prof_aud_ticks / g_prof_frame_cnt));
+  g_prof_cpu_ticks = 0;
+  g_prof_ppu_ticks = 0;
+  g_prof_dsp_ticks = 0;
+  g_prof_aud_ticks = 0;
+  g_prof_frame_cnt = 0;
+}
+
 void InfoNES_LoadFrame()
 {
-  //rt_tick_t start = rt_tick_get();
+  rt_tick_t _t0 = rt_tick_get();
 
   /* FPS counting */
   g_fps_frame_cnt++;
@@ -587,8 +608,9 @@ void InfoNES_LoadFrame()
 
   // WorkFrame IS the canvas buffer — just trigger LVGL refresh
   nes_canvas_refresh();
-  //rt_tick_t end = rt_tick_get();
-  //InfoNES_MessageBox( "%s took %d tick\n", __func__, end - start );
+
+  g_prof_dsp_ticks += rt_tick_get() - _t0;
+  if (++g_prof_frame_cnt >= 60) PROF_Report();
 }
 
 /*===================================================================*/
