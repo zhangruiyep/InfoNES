@@ -33,3 +33,6 @@
 
 # ROM images
 *.nes
+
+# Log files
+*.log

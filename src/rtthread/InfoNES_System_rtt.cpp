@@ -69,8 +69,7 @@ extern "C" {
 #endif
 /* Pad state */
 extern DWORD dwKeyPad1;
-/* lv canvas for display */
-extern WORD canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
+/* canvas refresh */
 extern void nes_canvas_refresh(void);
 /* audio */
 extern void infoNES_audio_init(void);
@@ -586,13 +585,7 @@ void InfoNES_LoadFrame()
     g_fps_last_tick = now;
   }
 
-  DWORD *p_src = (DWORD *)WorkFrame;
-  DWORD *p_dst = (DWORD *)canvas_buffer;
-  DWORD *p_end = p_src + (NES_DISP_HEIGHT * NES_DISP_WIDTH / 2);
-  do {
-    *p_dst++ = (*p_src & 0x7FE07FE0) << 1 | (*p_src & 0x001F001F);
-  } while (++p_src < p_end);
-
+  // WorkFrame IS the canvas buffer — just trigger LVGL refresh
   nes_canvas_refresh();
   //rt_tick_t end = rt_tick_get();
   //InfoNES_MessageBox( "%s took %d tick\n", __func__, end - start );

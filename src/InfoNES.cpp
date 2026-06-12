@@ -783,6 +783,7 @@ void InfoNES_DrawLine()
   int nSprData;
   BYTE bySprCol;
   BYTE pSprBuf[ NES_DISP_WIDTH + 7 ];
+  DWORD pPriBits[ 8 ];  // 256-bit priority buffer (replaces 0x8000 flag)
 
   /*-------------------------------------------------------------------*/
   /*  Render Background                                                */
@@ -793,6 +794,10 @@ void InfoNES_DrawLine()
 
   // Pointer to the render position
   pPoint = &WorkFrame[ PPU_Scanline * NES_DISP_WIDTH ];
+
+  // Clear priority bit buffer
+  pPriBits[0] = pPriBits[1] = pPriBits[2] = pPriBits[3] = 
+  pPriBits[4] = pPriBits[5] = pPriBits[6] = pPriBits[7] = 0;
 
   // Clear a scanline if screen is off
   if ( !( PPU_R1 & R1_SHOW_SCR ) )
@@ -834,9 +839,15 @@ void InfoNES_DrawLine()
     pAttrBase = PPUBANK[ nNameTable ] + 0x3c0 + ( nY / 4 ) * 8;
     pPalTbl =  &PalTable[ ( ( ( pAttrBase[ nX >> 2 ] >> ( ( nX & 2 ) + nY4 ) ) & 3 ) << 2 ) ];
 
+    // Track pixel offset and priority bits
+    int nPixOfs = 0;
+#define SET_PRI(cond) do { if (cond) pPriBits[nPixOfs>>5] |= 1UL<<(nPixOfs&31); nPixOfs++; } while(0)
+
     for ( nIdx = PPU_Scr_H_Bit; nIdx < 8; ++nIdx )
     {
-      *( pPoint++ ) = pPalTbl[ pbyChrData[ nIdx ] ];
+      BYTE col = pbyChrData[ nIdx ];
+      *( pPoint++ ) = pPalTbl[ col ];
+      SET_PRI( col == 0 );
     }
 
     // Callback at PPU read/write
@@ -854,14 +865,14 @@ void InfoNES_DrawLine()
       pbyChrData = PPU_BG_Base + ( *pbyNameTable << 6 ) + nYBit;
       pPalTbl = &PalTable[ ( ( ( pAttrBase[ nX >> 2 ] >> ( ( nX & 2 ) + nY4 ) ) & 3 ) << 2 ) ];
 
-      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ]; 
-      pPoint[ 1 ] = pPalTbl[ pbyChrData[ 1 ] ];
-      pPoint[ 2 ] = pPalTbl[ pbyChrData[ 2 ] ];
-      pPoint[ 3 ] = pPalTbl[ pbyChrData[ 3 ] ];
-      pPoint[ 4 ] = pPalTbl[ pbyChrData[ 4 ] ];
-      pPoint[ 5 ] = pPalTbl[ pbyChrData[ 5 ] ];
-      pPoint[ 6 ] = pPalTbl[ pbyChrData[ 6 ] ];
-      pPoint[ 7 ] = pPalTbl[ pbyChrData[ 7 ] ];
+      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ]; SET_PRI( pbyChrData[ 0 ] == 0 );
+      pPoint[ 1 ] = pPalTbl[ pbyChrData[ 1 ] ]; SET_PRI( pbyChrData[ 1 ] == 0 );
+      pPoint[ 2 ] = pPalTbl[ pbyChrData[ 2 ] ]; SET_PRI( pbyChrData[ 2 ] == 0 );
+      pPoint[ 3 ] = pPalTbl[ pbyChrData[ 3 ] ]; SET_PRI( pbyChrData[ 3 ] == 0 );
+      pPoint[ 4 ] = pPalTbl[ pbyChrData[ 4 ] ]; SET_PRI( pbyChrData[ 4 ] == 0 );
+      pPoint[ 5 ] = pPalTbl[ pbyChrData[ 5 ] ]; SET_PRI( pbyChrData[ 5 ] == 0 );
+      pPoint[ 6 ] = pPalTbl[ pbyChrData[ 6 ] ]; SET_PRI( pbyChrData[ 6 ] == 0 );
+      pPoint[ 7 ] = pPalTbl[ pbyChrData[ 7 ] ]; SET_PRI( pbyChrData[ 7 ] == 0 );
       pPoint += 8;
 
       // Callback at PPU read/write
@@ -885,14 +896,14 @@ void InfoNES_DrawLine()
       pbyChrData = PPU_BG_Base + ( *pbyNameTable << 6 ) + nYBit;
       pPalTbl = &PalTable[ ( ( ( pAttrBase[ nX >> 2 ] >> ( ( nX & 2 ) + nY4 ) ) & 3 ) << 2 ) ];
 
-      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ]; 
-      pPoint[ 1 ] = pPalTbl[ pbyChrData[ 1 ] ];
-      pPoint[ 2 ] = pPalTbl[ pbyChrData[ 2 ] ];
-      pPoint[ 3 ] = pPalTbl[ pbyChrData[ 3 ] ];
-      pPoint[ 4 ] = pPalTbl[ pbyChrData[ 4 ] ];
-      pPoint[ 5 ] = pPalTbl[ pbyChrData[ 5 ] ];
-      pPoint[ 6 ] = pPalTbl[ pbyChrData[ 6 ] ];
-      pPoint[ 7 ] = pPalTbl[ pbyChrData[ 7 ] ];
+      pPoint[ 0 ] = pPalTbl[ pbyChrData[ 0 ] ]; SET_PRI( pbyChrData[ 0 ] == 0 );
+      pPoint[ 1 ] = pPalTbl[ pbyChrData[ 1 ] ]; SET_PRI( pbyChrData[ 1 ] == 0 );
+      pPoint[ 2 ] = pPalTbl[ pbyChrData[ 2 ] ]; SET_PRI( pbyChrData[ 2 ] == 0 );
+      pPoint[ 3 ] = pPalTbl[ pbyChrData[ 3 ] ]; SET_PRI( pbyChrData[ 3 ] == 0 );
+      pPoint[ 4 ] = pPalTbl[ pbyChrData[ 4 ] ]; SET_PRI( pbyChrData[ 4 ] == 0 );
+      pPoint[ 5 ] = pPalTbl[ pbyChrData[ 5 ] ]; SET_PRI( pbyChrData[ 5 ] == 0 );
+      pPoint[ 6 ] = pPalTbl[ pbyChrData[ 6 ] ]; SET_PRI( pbyChrData[ 6 ] == 0 );
+      pPoint[ 7 ] = pPalTbl[ pbyChrData[ 7 ] ]; SET_PRI( pbyChrData[ 7 ] == 0 );
       pPoint += 8;
 
       // Callback at PPU read/write
@@ -909,7 +920,9 @@ void InfoNES_DrawLine()
     pPalTbl = &PalTable[ ( ( ( pAttrBase[ nX >> 2 ] >> ( ( nX & 2 ) + nY4 ) ) & 3 ) << 2 ) ];
     for ( nIdx = 0; nIdx < PPU_Scr_H_Bit; ++nIdx )
     {
-      pPoint[ nIdx ] = pPalTbl[ pbyChrData[ nIdx ] ];
+      BYTE col = pbyChrData[ nIdx ];
+      pPoint[ nIdx ] = pPalTbl[ col ];
+      SET_PRI( col == 0 );
     }
 
     // Callback at PPU read/write
@@ -924,6 +937,7 @@ void InfoNES_DrawLine()
 
       pPointTop = &WorkFrame[ PPU_Scanline * NES_DISP_WIDTH ];
       InfoNES_MemorySet( pPointTop, 0, 8 << 1 );
+      pPriBits[0] &= ~0xFF;  // Clear priority for clipped left 8 pixels
     }
 
     /*-------------------------------------------------------------------*/
@@ -1042,11 +1056,13 @@ void InfoNES_DrawLine()
     for ( nX = 0; nX < NES_DISP_WIDTH; ++nX )
     {
       nSprData = pSprBuf[ nX ];
-      if ( nSprData  && ( nSprData & 0x80 || pPoint[ nX ] & 0x8000 ) )
+      if ( nSprData  && ( nSprData & 0x80 || ( pPriBits[ nX >> 5 ] & ( 1UL << ( nX & 31 ) ) ) ) )
       {
         pPoint[ nX ] = PalTable[ ( nSprData & 0xf ) + 0x10 ];
       }
     }
+
+#undef SET_PRI
 
     /*-------------------------------------------------------------------*/
     /*  Sprite Clipping                                                  */

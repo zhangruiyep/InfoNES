@@ -3,6 +3,7 @@
 #include "lvgl.h"
 
 #include "../InfoNES_System.h"
+#include "../InfoNES.h"
 
 #define DBG_TAG "infoNES"
 #define DBG_LVL DBG_INFO
@@ -28,7 +29,6 @@ typedef enum {
     NES_BTN_MAX,
 } nes_btn_id_t;
 
-unsigned short canvas_buffer[ NES_DISP_WIDTH * NES_DISP_HEIGHT ] __attribute__ ((aligned (4), section(".l2_non_ret_bss_nes")));
 extern void start_application( void );
 extern void close_application( void );
 
@@ -136,7 +136,7 @@ static void nes_ui_obj_init(void)
     lv_obj_set_style_bg_color(scr, lv_color_hex(0xFFFFFF), LV_STATE_DEFAULT);
 
     g_nes.canvas = lv_canvas_create(scr);
-    lv_canvas_set_buffer(g_nes.canvas, canvas_buffer, NES_DISP_WIDTH, NES_DISP_HEIGHT, LV_IMG_CF_RGB565);
+    lv_canvas_set_buffer(g_nes.canvas, WorkFrame, NES_DISP_WIDTH, NES_DISP_HEIGHT, LV_IMG_CF_RGB565);
     lv_obj_align(g_nes.canvas, LV_ALIGN_TOP_MID, 0, 0);
 
     /* FPS label - below canvas, right side, black text */

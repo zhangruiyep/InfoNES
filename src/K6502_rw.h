@@ -18,6 +18,9 @@
 #include "InfoNES_System.h"
 #include "InfoNES_pAPU.h"
 
+/* Convert NES RGB555 palette color to RGB565 */
+#define NES_TO_RGB565(c) ((((c) & 0x7FE0) << 1) | ((c) & 0x001F))
+
 /*===================================================================*/
 /*                                                                   */
 /*            K6502_ReadZp() : Reading from the zero page            */
@@ -347,14 +350,14 @@ static inline void K6502_Write( WORD wAddr, BYTE byData )
               PPURAM[ 0x3f10 ] = PPURAM[ 0x3f14 ] = PPURAM[ 0x3f18 ] = PPURAM[ 0x3f1c ] = 
               PPURAM[ 0x3f00 ] = PPURAM[ 0x3f04 ] = PPURAM[ 0x3f08 ] = PPURAM[ 0x3f0c ] = byData;
               PalTable[ 0x00 ] = PalTable[ 0x04 ] = PalTable[ 0x08 ] = PalTable[ 0x0c ] =
-              PalTable[ 0x10 ] = PalTable[ 0x14 ] = PalTable[ 0x18 ] = PalTable[ 0x1c ] = NesPalette[ byData ] | 0x8000;
+              PalTable[ 0x10 ] = PalTable[ 0x14 ] = PalTable[ 0x18 ] = PalTable[ 0x1c ] = NES_TO_RGB565( NesPalette[ byData ] );
             }
             else
 	    if ( addr & 3 )
             {
               // Palette
               PPURAM[ addr ] = byData;
-              PalTable[ addr & 0x1f ] = NesPalette[ byData ];
+              PalTable[ addr & 0x1f ] = NES_TO_RGB565( NesPalette[ byData ] );
             }
           }
           break;
