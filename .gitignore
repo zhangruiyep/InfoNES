@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+# ROM images
+*.nes

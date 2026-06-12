@@ -567,9 +567,25 @@ void *InfoNES_MemorySet( void *dest, int c, int count )
 /*           Transfer the contents of work frame on the screen       */
 /*                                                                   */
 /*===================================================================*/
+
+/* FPS tracking */
+int g_nes_fps = 0;
+static int g_fps_frame_cnt = 0;
+static rt_tick_t g_fps_last_tick = 0;
+
 void InfoNES_LoadFrame()
 {
   //rt_tick_t start = rt_tick_get();
+
+  /* FPS counting */
+  g_fps_frame_cnt++;
+  rt_tick_t now = rt_tick_get();
+  if (now - g_fps_last_tick >= RT_TICK_PER_SECOND) {
+    g_nes_fps = g_fps_frame_cnt;
+    g_fps_frame_cnt = 0;
+    g_fps_last_tick = now;
+  }
+
   DWORD *p_src = (DWORD *)WorkFrame;
   DWORD *p_dst = (DWORD *)canvas_buffer;
   for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH / 2; i++ )

@@ -2,6 +2,8 @@
 #include "rtthread.h"
 #include "lvgl.h"
 
+#include "../InfoNES_System.h"
+
 #define DBG_TAG "infoNES"
 #define DBG_LVL DBG_INFO
 #include <rtdbg.h>
@@ -35,6 +37,7 @@ unsigned int dwKeyPad1;
 typedef struct
 {
     lv_obj_t *canvas;
+    lv_obj_t *fps_label;
 } app_nes_t;
 
 static app_nes_t g_nes;
@@ -109,6 +112,12 @@ static void nes_page_refresh(lv_timer_t *timer)
         lv_obj_invalidate(g_nes.canvas);
         nes_canvas_need_refresh = false;
     }
+
+    /* Update FPS display */
+    if (g_nes.fps_label)
+    {
+        lv_label_set_text_fmt(g_nes.fps_label, "FPS: %d", g_nes_fps);
+    }
 }
 
 void nes_canvas_refresh(void)
@@ -127,6 +136,12 @@ static void nes_ui_obj_init(void)
     g_nes.canvas = lv_canvas_create(scr);
     lv_canvas_set_buffer(g_nes.canvas, canvas_buffer, NES_DISP_WIDTH, NES_DISP_HEIGHT, LV_IMG_CF_RGB565);
     lv_obj_align(g_nes.canvas, LV_ALIGN_TOP_MID, 0, 0);
+
+    /* FPS label - below canvas, right side, black text */
+    g_nes.fps_label = lv_label_create(scr);
+    lv_label_set_text(g_nes.fps_label, "FPS: --");
+    lv_obj_set_style_text_color(g_nes.fps_label, lv_color_black(), LV_STATE_DEFAULT);
+    lv_obj_align_to(g_nes.fps_label, g_nes.canvas, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 0);
 
     lv_obj_t *pad = lv_obj_create(scr);
     lv_obj_set_size(pad, NES_PAD_WIDTH, NES_PAD_HEIGHT);

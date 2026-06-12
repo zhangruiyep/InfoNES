@@ -66,4 +66,7 @@ void InfoNES_SoundOutput(int samples, BYTE *wave1, BYTE *wave2, BYTE *wave3, BYT
 /* Print system message */
 void InfoNES_MessageBox( const char *pszMsg, ... );
 
+/* FPS (Frames Per Second) counter value */
+extern int g_nes_fps;
+
 #endif /* !InfoNES_SYSTEM_H_INCLUDED */
