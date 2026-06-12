@@ -113,9 +113,11 @@ static void nes_page_refresh(lv_timer_t *timer)
         nes_canvas_need_refresh = false;
     }
 
-    /* Update FPS display */
-    if (g_nes.fps_label)
+    /* Update FPS display only when value changes */
+    static int last_fps = -1;
+    if (g_nes.fps_label && g_nes_fps != last_fps)
     {
+        last_fps = g_nes_fps;
         lv_label_set_text_fmt(g_nes.fps_label, "FPS: %d", g_nes_fps);
     }
 }

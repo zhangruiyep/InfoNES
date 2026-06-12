@@ -152,6 +152,7 @@ WORD FrameStep;
 /* Frame Skip */
 WORD FrameSkip;
 WORD FrameCnt;
+BYTE MapperCustomPPU;
 
 /* Display Buffer */
 #if 0
@@ -390,6 +391,7 @@ int InfoNES_Reset()
   // Reset frame skip and frame count
   FrameSkip = 0;
   FrameCnt = 0;
+  MapperCustomPPU = 0;  // Default: no custom PPU callbacks
 
 #if 0
   // Reset work frame
@@ -635,7 +637,7 @@ void InfoNES_Cycle()
     }
 
     // A mapper function in H-Sync
-    MapperHSync();
+    if ( MapperCustomPPU ) MapperHSync();
     
     // A function in H-Sync
     if ( InfoNES_HSync() == -1 )
@@ -787,7 +789,7 @@ void InfoNES_DrawLine()
   /*-------------------------------------------------------------------*/
 
   /* MMC5 VROM switch */
-  MapperRenderScreen( 1 );
+  if ( MapperCustomPPU ) MapperRenderScreen( 1 );
 
   // Pointer to the render position
   pPoint = &WorkFrame[ PPU_Scanline * NES_DISP_WIDTH ];
@@ -838,7 +840,7 @@ void InfoNES_DrawLine()
     }
 
     // Callback at PPU read/write
-    MapperPPU( PATTBL( pbyChrData ) );
+    if ( MapperCustomPPU ) MapperPPU( PATTBL( pbyChrData ) );
 
     ++nX;
     ++pbyNameTable;
@@ -863,7 +865,7 @@ void InfoNES_DrawLine()
       pPoint += 8;
 
       // Callback at PPU read/write
-      MapperPPU( PATTBL( pbyChrData ) );
+      if ( MapperCustomPPU ) MapperPPU( PATTBL( pbyChrData ) );
 
       ++pbyNameTable;
     }
@@ -894,7 +896,7 @@ void InfoNES_DrawLine()
       pPoint += 8;
 
       // Callback at PPU read/write
-      MapperPPU( PATTBL( pbyChrData ) );
+      if ( MapperCustomPPU ) MapperPPU( PATTBL( pbyChrData ) );
 
       ++pbyNameTable;
     }
@@ -911,7 +913,7 @@ void InfoNES_DrawLine()
     }
 
     // Callback at PPU read/write
-    MapperPPU( PATTBL( pbyChrData ) );
+    if ( MapperCustomPPU ) MapperPPU( PATTBL( pbyChrData ) );
 
     /*-------------------------------------------------------------------*/
     /*  Backgroud Clipping                                               */
@@ -942,7 +944,7 @@ void InfoNES_DrawLine()
   /*-------------------------------------------------------------------*/
 
   /* MMC5 VROM switch */
-  MapperRenderScreen( 0 );
+  if ( MapperCustomPPU ) MapperRenderScreen( 0 );
 
   if ( PPU_R1 & R1_SHOW_SP )
   {

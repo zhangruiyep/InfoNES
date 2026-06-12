@@ -140,7 +140,7 @@ void start_application( void )
     /* Create Emulation Thread */
     g_nes_tid = rt_thread_create("nes_emu",
                            emulation_thread, RT_NULL,
-                           4096, RT_THREAD_PRIORITY_MIDDLE, RT_THREAD_TICK_DEFAULT);
+                           8192, RT_THREAD_PRIORITY_MIDDLE, RT_THREAD_TICK_DEFAULT);
 
     if (g_nes_tid != RT_NULL) {
         rt_kprintf("[NES] Starting nes_emu thread\n");
@@ -588,12 +588,11 @@ void InfoNES_LoadFrame()
 
   DWORD *p_src = (DWORD *)WorkFrame;
   DWORD *p_dst = (DWORD *)canvas_buffer;
-  for ( int i = 0; i < NES_DISP_HEIGHT * NES_DISP_WIDTH / 2; i++ )
-  {
-    *p_dst = (*p_src & 0x7FE07FE0) << 1 | (*p_src & 0x001F001F);
-    p_src++;
-    p_dst++;
-  }
+  DWORD *p_end = p_src + (NES_DISP_HEIGHT * NES_DISP_WIDTH / 2);
+  do {
+    *p_dst++ = (*p_src & 0x7FE07FE0) << 1 | (*p_src & 0x001F001F);
+  } while (++p_src < p_end);
+
   nes_canvas_refresh();
   //rt_tick_t end = rt_tick_get();
   //InfoNES_MessageBox( "%s took %d tick\n", __func__, end - start );

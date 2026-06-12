@@ -35,6 +35,7 @@ void Map5_Init()
 
   /* Initialize Mapper */
   MapperInit = Map5_Init;
+  MapperCustomPPU = 1;  // MMC5 needs PPU callbacks
 
   /* Write to Mapper */
   MapperWrite = Map5_Write;

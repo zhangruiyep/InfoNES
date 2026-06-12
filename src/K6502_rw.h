@@ -66,11 +66,12 @@ static inline BYTE K6502_Read( WORD wAddr )
  */
   BYTE byRet;
 
+  /* Fast path: RAM (0x0000-0x1FFF) — the most frequent access */
+  if ( ( wAddr & 0xe000 ) == 0x0000 )
+    return RAM[ wAddr & 0x7ff ];
+
   switch ( wAddr & 0xe000 )
   {
-    case 0x0000:  /* RAM */
-      return RAM[ wAddr & 0x7ff ];
-
     case 0x2000:  /* PPU */
       if ( ( wAddr & 0x7 ) == 0x7 )   /* PPU Memory */
       {
@@ -218,12 +219,15 @@ static inline void K6502_Write( WORD wAddr, BYTE byData )
  *
  */
 
+  /* Fast path: RAM (0x0000-0x1FFF) — the most frequent access */
+  if ( ( wAddr & 0xe000 ) == 0x0000 )
+  {
+    RAM[ wAddr & 0x7ff ] = byData;
+    return;
+  }
+
   switch ( wAddr & 0xe000 )
   {
-    case 0x0000:  /* RAM */
-      RAM[ wAddr & 0x7ff ] = byData;
-      break;
-
     case 0x2000:  /* PPU */
       switch ( wAddr & 0x7 )
       {

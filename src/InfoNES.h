@@ -189,6 +189,7 @@ extern WORD FrameStep;
 extern WORD FrameSkip;
 extern WORD FrameCnt;
 extern WORD FrameWait;
+extern BYTE MapperCustomPPU;
 
 #if 0
 extern WORD DoubleFrame[ 2 ][ NES_DISP_WIDTH * NES_DISP_HEIGHT ];
