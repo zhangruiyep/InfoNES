@@ -194,6 +194,9 @@ BYTE APU_Reg[ 0x18 ];
 /* APU Mute ( 0:OFF, 1:ON ) */
 int APU_Mute = 0;
 
+/* Sprite presence per scanline (precomputed once per frame) */
+BYTE g_spr_scanlines[ NES_DISP_HEIGHT ];
+
 /* Pad data */
 DWORD PAD1_Latch;
 DWORD PAD2_Latch;
@@ -710,6 +713,20 @@ int InfoNES_HSync()
 
       // Get position of sprite #0
       InfoNES_GetSprHitY();
+
+      /* Precompute which scanlines have sprites (skip empty lines) */
+      {
+        int i, j, y, h;
+        h = ( PPU_R0 & R0_SP_SIZE ) ? 16 : 8;
+        InfoNES_MemorySet( g_spr_scanlines, 0, sizeof(g_spr_scanlines) );
+        for ( i = 0; i < 64; ++i ) {
+          y = SPRRAM[ i << 2 ] + 1;  // SPR_Y
+          for ( j = 0; j < h; ++j ) {
+            if ( ( y + j ) >= 0 && ( y + j ) < NES_DISP_HEIGHT )
+              g_spr_scanlines[ y + j ] = 1;
+          }
+        }
+      }
       break;
 
     case SCAN_UNKNOWN_START:
@@ -970,7 +987,7 @@ void InfoNES_DrawLine()
   /* MMC5 VROM switch */
   if ( MapperCustomPPU ) MapperRenderScreen( 0 );
 
-  if ( PPU_R1 & R1_SHOW_SP )
+  if ( ( PPU_R1 & R1_SHOW_SP ) && g_spr_scanlines[ PPU_Scanline ] )
   {
     // Reset Scanline Sprite Count
     PPU_R2 &= ~R2_MAX_SP;
